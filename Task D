@@ -1,0 +1,130 @@
+! Question 1:
+! a) 
+!  i) larger of two numbers / chars
+
+!Polymorphic Functions, it can be used for char and num 
+
+
+typevar alpha;
+
+!larger (9,6);
+
+dec larger: alpha # alpha -> alpha ;
+--- larger (x, y) <= if x < y 
+                     then y
+					 else x;
+					 
+
+! ii) largest element of a list of numbers / chars 
+
+!we use the pop function so if the function is the first tail is gone we just take the largest number between the two number 
+!if the the first head is bigger than the second head either we pop the first head or pop the first head 
+
+
+dec pop: list alpha -> list alpha;
+--- pop nil <= nil;
+--- pop ( x :: y) <= y;
+
+!largest ([1,4,6,80,9,10]);
+
+dec largest: list alpha ->  alpha;
+--- largest (x1 :: y2 :: [])  <= larger (x1 , y2);
+--- largest (x1 :: x2 :: y1) <= if x1 > x2
+                                then largest (x1 :: ( pop (x2 :: y1)))
+								else largest (x2 :: (pop ( x1 :: y1 )));
+								
+								
+!b ) Sequence of reductions:
+
+dec compress: (alpha # alpha -> alpha) # (list alpha) -> alpha ;
+--- compress ( f, h :: nil) <= h;
+--- compress ( f, h1 :: (h2 ::t)) <= f (h1, compress (f, h2 :: t));
+
+!compress (larger, "bou");
+!compress (larger, 'b' :: ("ou"));
+!compress (larger, 'b' :: ('o' :: 'u'));
+!larger ('b', compress (larger, ('o' :: 'u')));
+!larger ('b', compress (larger, 'o' :: 'u'));
+!larger ('b', compress (larger, 'o' :: ('u':: nil)));
+!larger ('b', compress (larger, 'o' :: 'u':: (nil)));
+
+
+!Question 2:
+
+dec islower : char -> truval ;
+---islower x <=  (x =< 'z') and ( x >= 'a')  ;
+
+dec lower_upper : char -> char ;
+---lower_upper x <= chr (ord x - 32) ;
+
+dec convert : char -> char ;
+---convert x <= if islower x
+                     then lower_upper x
+                     else x  ;
+					 
+
+
+dec map: (alpha -> beta) # (list alpha) -> list beta;
+--- map (f, nil) <= nil;
+--- map (f, h :: t) <= f h :: map (f,t);
+
+dec reduce: (alpha # beta -> beta) # beta # (list alpha) -> beta;
+--- reduce (f, b, nil) <=b;
+--- reduce (f,b, h :: t) <= f (h, reduce (f, b, t)); 
+! f= lambda (n,l) => (f n :: l)
+!h = nil
+!t = "bou"
+
+! Sequence of reduction for map function
+
+!map (convert, ("bou"));
+!map (convert, b :: ("ou"));
+!convert b :: (map (convert, ("ou")));
+!(if islower 'b' then lower_upper 'b' else 'b') :: (map (convert, ("ou"))) ;
+!(lower_upper 'b') :: (map (convert, ("ou"))) ;
+!(chr (ord 'b' - 32)) :: (map (convert, ("ou"))) ;
+!'B' :: (map (convert, ("ou"))) ;
+!'B' :: (map (convert 'o' :: "u"));
+!'B' :: (map ((if islower 'o' then lower_upper 'o' else 'o') :: convert "u");
+!'B' :: (map (lower_upper 'o') :: convert "u");
+!'B' :: (map (chr (ord 'o' - 32)) :: convert "u");
+!'B' :: ('O' ::( map ( convert "u")));
+!'B' :: ('O' :: (map (convert 'u' :: nil)));
+!'B' :: ('O' :: (map ((if islower 'u' then lower_upper 'u' else 'u') :: convert nil)));
+!'B' :: ('O' :: (map ((lower_upper 'u') ::convert nil)))'
+!'B' :: ('O' :: (map ((chr (ord 'u' - 32)) ::convert nil)));
+!'B' :: ('O' :: 'U' :: map ( convert nil));
+!'B' :: ('O' :: ('U' :: map( nil)));
+!'B' :: ('O' :: 'U' :: nil));
+!'B' :: 'O' ::'U';
+!("BOU");
+
+!Sequence of reduction for reduce function
+! Higher-Order Functions
+! to run it use the function:    reduce (lambda (n,l) => convert(n) :: l, nil, "bou");
+
+!reduce (lambda (n,l) =>f n :: l, nil, "bou");
+!reduce (lambda (n,l) => convert :: l, nil, "bou");
+!reduce (lambda (n,l) => convert n:: l, nil, ('b' :: ("ou")));
+!lambda (n,l) => convert n :: 1('b' :: (reduce (lambda (n,l))) => convert n::l, nil, ("ou"));
+!lambda ('b',l) => convert 'b' :: l :: (reduce (lambda (n,l))) => convert nil ::l , nil, ("ou"));
+!lambda ('b',l) => (if islower 'b' then lower_upper 'b' else 'b' ):: l :: (reduce (lambda (n,l))) => convert nil ::l , nil, ("ou"));
+!lambda ('b',l) => lower_upper 'b' :: l :: (reduce (lambda (n,l))) => convert nil ::l , nil, ("ou"));
+!lambda ('b',l) => (chr (ord 'b' - 32)) :: l :: (reduce (lambda (n,l))) => convert nil ::l , nil, ("ou"));
+!lambda ('b',l) => 'B' :: l :: (reduce (lambda (n,l))) => convert nil ::l , nil, ("ou");
+
+!'B' :: (reduce (lambda (n,l) => convert n::l, nil, ("ou")));
+!'B' :: (reduce (lambda (n,l) => convert n::l, nil, ('o' ::'u')));
+!'B' :: (lambda (n,l) => convert n::l, ( 'o' :: reduce (lambda (n,1), ('u')));
+!'B' :: (lambda (n,l) => convert n::l, 'o' ::( reduce (lambda (n,1), ('u')));
+!'B' :: (lambda ('o',l) => convert 'o' :: l :: ( reduce (lambda (n,1),('u')));
+!'B' :: (lambda ('o',1) => (if islower 'o' then lower_upper 'o' else 'o' ) :: l  :: (reduce (lambda (n,l), ('u')));
+!'B' :: (lambda ('o',l) => (lower_upper 'o') :: l ::(reduce (lambda (n,l) , ('u')));
+!'B' :: (lambda ('o',l) => (chr (ord 'o' - 32)) :: l ::(reduce (lambda (n,l) , ('u')));
+!'B' :: (lambda ('o',l) => 'O' :: l :: reduce (lambda (n,l), ('u')));
+!'B' :: 'O' ::(lambda (n,l) => n::l :: (lambda (n,l) => convert n :: 1, ('u')));
+!'B' :: 'O' :: (lambda ('u',1) => n::l ::(lambda ('u',l) => (if islower 'u' then lower_upper 'u' else 'u' )));
+!'B' :: 'O' :: (lambda ('u',1) => n:l ::(lambda ('u',l) => lower_upper 'u';
+!'B' :: 'O' :: (lambda ('u',1) => n::l ::(lambda ('u',l), nil, 'U'));
+!'B' :: 'O' :: 'U' :: (lambda (n,l) => n::l (lambda (n,l), nil, nil));
+!("BOU")
