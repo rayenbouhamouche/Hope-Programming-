@@ -1,0 +1,61 @@
+! Question 1:
+! (a)
+! to evaluate two words if they are true by checking the first lexically less than the second.
+!if the first alphabet in the first word is similar to the second one, we need to compare the seconde letter 
+
+!Checking if the character is lower, so if the it's small charactere the result will appear as true otherwise false.
+
+dec islower : char -> truval ;
+--- islower c <=  (c =< 'z') and ( c >= 'a')  ;
+
+!to convert small char to big, character order will - 32 to achieve a a bigger char otherwise you'll get a different char
+
+dec lower_upper : char -> char ;
+--- lower_upper c <= chr (ord c - 32) ;
+
+! converting the character from small to big. If the char is lower then it should appear upper
+
+dec convert_l_u : char -> char ;
+--- convert_l_u c <= if islower c
+                     then lower_upper c
+                     else c  ;
+
+dec shout : list char -> list char;
+--- shout nil <= nil;
+--- shout (h::t) <= convert_l_u h :: shout t ;
+
+dec pre : list char # list char -> truval ;
+--- pre (nil , nil) <= false ;
+--- pre (h1 :: t1 , nil) <= false ;
+--- pre (nil , h2 :: t2) <= true ;
+--- pre (h1 :: t1 , h2 :: t2) <= if h1 = h2
+                                 then pre (t1 , t2)
+                                 else h1 < h2;
+
+dec precedes : list char # list char -> truval ;
+--- precedes (h1 :: t1 , h2 :: t2) <= pre(shout (h1 :: t1) , shout(h2 :: t2));
+
+! (b)
+
+dec precedes1 : list char -> truval ;
+--- precedes1 (h :: t) <= pre("Rayen" , shout(h :: t));
+
+
+!Question 2:
+
+dec isThree: list num -> truval ;
+---isThree (h1::h2::h3::nil) <= true ;
+---isThree (h1::h2::h3::t) <= false ;
+---isThree (anylist1::nil) <= false ;
+---isThree (anylist1::anylist2::nil) <= false ;
+
+!Question 3:
+
+precedes1 ("Bou")
+precedes1 ("Rayen", "Bou")
+precedes1 pre (shout (convert"Rayen"), shout(convert("Bou"))
+precedes1 pre (shout (convert('R'::"ayen")), shout(convert('B'::"ou")))
+precedes1 pre (shout (convert('R'::('a'::"yen")), shout(convert('B'::('o'::('u'::nil))))
+precedes1 pre (shout (convert('R'::('a'::('y'::"en")))), shout(convert('B'::('o'::('u'::nil)))))
+precedes1 pre (shout (convert('R'::('a'::('y'::('e'::'n'))))), shout(convert('B'::('o'::('u'::nil))))))
+precedes1 pre (shout (convert('R'::('a'::('y'::('e'::('n')))))), shout(convert('B'::('o'::('u'::nil)))))))
