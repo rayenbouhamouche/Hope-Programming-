@@ -1,0 +1,161 @@
+! Question 1:
+
+! a) a polymorphic function to merge two sorted lists
+
+typevar alpha;
+dec mergeList : list alpha # list alpha -> list alpha ;
+---mergeList (nil, nil) <= nil;
+---mergeList (nil, h2 :: t2) <= h2 :: t2;
+---mergeList (h1 :: t1, nil) <= h1 :: t1;
+---mergeList (h1 :: t1, h2 :: t2) <= if h1 < h2
+                                           then (h1 :: ( mergeList (t1, h2 :: t2) ))
+                                           else (h2 :: ( mergeList ( h1 :: t1, t2) ));
+
+
+! b) a polymorphic function to sort a list of items
+
+!length
+dec length: list alpha -> num ;
+--- length nil <= 0 ;
+--- length (h :: t) <= length t + 1 ;
+ 
+!Front 
+dec take: num # list alpha -> list alpha ;
+--- take(0, l ) <= nil ;
+--- take(n, nil ) <= nil ;
+--- take(n, (h :: t ) ) <= h :: take ( n-1 , t) ;
+
+!Back
+dec drop: num # list alpha -> list alpha ;
+--- drop(0, l ) <= l ;
+--- drop(n, nil ) <= nil ;
+--- drop(n, (h :: t ) ) <= drop (n-1, t ) ;
+
+dec takeDiv2 : list alpha -> list alpha ;
+--- takeDiv2 (nil) <= nil ;
+--- takeDiv2 (theList) <= take ( length (theList) div 2 , theList) ;
+
+dec dropDiv2 : list alpha -> list alpha ;
+--- dropDiv2 (nil) <= nil ;
+--- dropDiv2 (theList) <= drop ( length (theList) div 2, theList) ; 
+
+dec mergeSortedList : list alpha -> list alpha ;
+--- mergeSortedList [] <= [] ;
+--- mergeSortedList [v] <= [v] ; 
+--- mergeSortedList (H :: h :: t)  <= mergeList ( mergeSortedList  (H :: takeDiv2 (t)) , 
+                                                  mergeSortedList ( h :: dropDiv2 (t))) ; 
+
+
+! c) Sequence of reduction when the input is 3 letters of my surname: 
+!mergeSortedList ( "bou" );
+!mergeList ( mergeSortedList ( 'b' :: takeDiv2 'u' ) , mergeSortedList ( 'o' :: dropDiv2 'u' ));  
+!mergeList (mergeSortedList ('b' :: (take ( length ('u') div 2 , 'u')))), mergeSortedList ( 'o' :: drop ( length ('u') div 2, 'u'));
+!mergeList (mergeSortedList ('b' :: ( 'b' :: (take ( n-1 , 'u')( length ('u') div 2 , 'u'))))), mergeSortedList ( 'o' :: (drop ( n-1 , 'u')( length ('u') div 2 , 'u')));
+!mergeList (mergeSortedList ('b' :: ('b' :: (take (n-1, 'u') ( (length 'u' + 1) ('u') div 2 , 'u'))))), mergeSortedList ('o' :: (drop ( n-1 , 'u') ( (length 'u' + 1) ('u') div 2 , 'u')));
+
+! >: mergeSortedList ("bou");
+
+
+
+
+
+!Question 2:
+
+! a) Abstract Data Type listStack is a sequence of items that are accessible at only one end.
+
+! i) adds item at the top of listStack s
+
+dec push: alpha # list alpha -> list alpha;
+---push (i, s) <= [i] <> s;
+
+! ii) removes element from the top of listStack s. 
+
+dec pop: list alpha -> list alpha;
+---pop nil <= nil;
+---pop (h :: t) <= t;
+
+! iii) returns the top element of listStack s
+
+dec top: list alpha -> alpha;
+---top ( h :: t) <= h;
+
+! iv) returns true if the listStack s is empty; else it returns false
+
+dec isEmpty: list alpha -> truval;
+---isEmpty nil <= true;
+---isEmpty ( h::t) <= false;
+
+! b) A sequence of brackets
+! i)one type of brackets
+
+
+dec firstCheck: list char # list char -> list char ;
+--- firstCheck ( [] ,[] ) <= " balanced" ;
+--- firstCheck ( [] , listStack :: [] ) <= "unbalanced" ;
+--- firstCheck (x::y , listStack) <= if x='('
+                                     then firstCheck( y, push ( '(' , listStack))
+									 else if x= ')'
+									      then if isEmpty (listStack)
+                                               then "unbalanced"
+								               else if top (listStack) = '('
+									                 then firstCheck ( y, pop (listStack))
+										             else "unbalanced"
+										  else firstCheck (x::y , listStack);
+										  
+dec check : list char -> list char  ;
+--- check (x::y) <= firstCheck (x::y, "" );
+
+
+! ii) three different types of brackets
+
+dec checkBrackets: char # char ->  truval;							 
+--- checkBrackets ( x , y) <= if x= '(' and y= ')' 
+                            then true
+			                else if x= '{' and y= '}'
+							     then true
+								 else if x= '[' and y= ']'
+								      then true 
+							else false ;
+							 
+
+
+
+dec checkTypesOfBrackets: list char # list char -> list char;
+---checkTypesOfBrackets ( [], anyStack ) <=  "unbalanced";
+---checkTypesOfBrackets ( [], [] ) <=  "balanced";
+---checkTypesOfBrackets (x :: y , listStack) <=  if x = '(' 
+                                                 or x = '{' 
+											     or x = '['
+										   
+                                                 then checkTypesOfBrackets ( y , push ( x , listStack))
+										         else if x = ')' 
+										              or x = '}' 
+												      or x = ']'
+													  
+                                                      then if isEmpty (listStack) 
+                                                           then "unbalanced"
+                                                           else if checkBrackets (top (listStack), x ) 
+                                                                then checkTypesOfBrackets (y , pop (listStack)) 
+                                                                else "unbalanced" 
+                                                  else "Can you check the brackets again?! ";								  
+											 
+
+dec checkAllBrackets : list char -> list char ;
+--- checkAllBrackets (x :: y) <= checkTypesOfBrackets ( x :: y, "" );											 
+				
+
+! c)
+!i)
+!it is priority Queue 
+
+dec enqueue1 : num # list num -> list num ;
+--- enqueue1( x, [] ) <= x :: [] ;
+---enqueue1 ( p, x::y ) <= if p < x or p=x
+                          then x :: enqueue1 (p,y)
+						  else p :: x :: y;
+						  
+!ii) Sequence of reduction 
+ !enqueue1 (4, [17,10,7,3]);
+ ! if 4 < [17,10,7] or 4 = [17,10,7]
+ ! then [17,10,7] :: enqueue1 (4,3)
+ ! else 4 :: [17,10,7] :: 3;
